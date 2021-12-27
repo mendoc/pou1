@@ -1,2 +1,2 @@
 # pou1
-Application mobile d'enregistrement de points GPS personnel
+Application Web (PWA) d'enregistrement de points GPS personnels

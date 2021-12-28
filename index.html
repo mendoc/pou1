@@ -67,6 +67,8 @@
             disable("save");
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(showPosition);
+            } else {
+                enable("btn-actu");
             }
         }
 
@@ -78,7 +80,7 @@
             l.href = link;
             enable("link");
             enable("save");
-            bntActu.classList.remove("disabled");
+            enable("btn-actu");
             getPoints()
         }
 

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@600&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <title>Pou1 - Lieux favoris</title>
+
+    <style>
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="col-sm-6 offset-sm-3" onload="getLocation()">
+    <div class="d-flex justify-content-between align-items-center px-3 border-bottom">
+        <h1 class="text-center mt-2">Position actuelle</h1>
+        <button id="btn-actu" class="btn btn-sm btn-primary d-flex align-items-center" onclick="getLocation()"><span
+                class="material-icons">refresh</span></button>
+    </div>
+    <div class="d-flex flex-column border-bottom">
+        <div id="coords" class="row mx-2 my-3">
+            <div class="col-4 text-end">Latittude : </div>
+            <div class="col-6" id="lat"> -</div>
+            <div class="col-4 text-end">Longitude : </div>
+            <div class="col-6" id="lng"> -</div>
+        </div>
+        <div class="text-center mb-3 d-flex justify-content-center" id="actions">
+            <a class="mx-2 btn btn-warning d-flex align-items-center disabled" target="_blank" id="link"><span>Google
+                    Maps &nbsp;</span><span class="material-icons">open_in_new</span></a>
+            <a class="mx-2 btn btn-primary d-flex align-items-center disabled" target="_blank" id="save"
+                onclick="savePoint()"><span class="material-icons">save</span> &nbsp;Enregistrer</a>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between align-items-center px-3 border-bottom bg-secondary">
+        <h1 class="text-center mt-2 text-white">Mes enregistrements</h1>
+        <span id="total-points" class="me-1 badge rounded-pill bg-light text-dark">-</span>
+    </div>
+    <div id="points"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+
+    <script>
+        let lat = document.getElementById("lat");
+        let lng = document.getElementById("lng");
+        let bntActu = document.getElementById("btn-actu");
+        let l = document.getElementById("link");
+
+        function getLocation() {
+            disable("btn-actu");
+            disable("link");
+            disable("save");
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+            }
+        }
+
+        function showPosition(position) {
+            lat.innerHTML = position.coords.latitude;
+            lng.innerHTML = position.coords.longitude;
+
+            let link = `https://www.google.com/maps/@${position.coords.latitude},${position.coords.longitude},15z`;
+            l.href = link;
+            enable("link");
+            enable("save");
+            bntActu.classList.remove("disabled");
+            getPoints()
+        }
+
+        function savePoint() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    let point = { lat: position.coords.latitude, lng: position.coords.longitude, access: Date.now() }
+                    console.log(position);
+                    if (localStorage.points) {
+                        let points = JSON.parse(localStorage.points);
+                        points.push(point);
+                        localStorage.points = JSON.stringify(points);
+                    } else {
+                        localStorage.points = JSON.stringify([point]);
+                    }
+                    getPoints()
+                });
+            }
+
+        }
+
+        function getPoints() {
+            let pointsHTML = "";
+            if (localStorage.points) {
+                let points = JSON.parse(localStorage.points);
+                document.getElementById("total-points").innerHTML = points.length;
+                points.forEach(p => {
+                    pointsHTML += `<div class="d-flex align-items-center border-bottom">
+                                    <span class="material-icons p-3 invisible">edit</span>
+                                    <span class="fs-5 flex-grow-1 py-3">${new Date(p.access).toLocaleString()}</span>
+                                    <a class="text-decoration-none p-3" target="_blank" href="https://www.google.com/maps/@${p.lat},${p.lng},15z"><span class="material-icons">open_in_new</span></a>
+                                </div>`
+                });
+                document.getElementById("points").innerHTML = pointsHTML;
+            } else {
+                document.getElementById("total-points").innerHTML = 0;
+            }
+        }
+
+        function disable(id) {
+            document.getElementById(id).classList.add("disabled");
+        }
+
+        function enable(id) {
+            document.getElementById(id).classList.remove("disabled");
+        }
+
+        function show(id) {
+            document.getElementById(id).classList.remove("d-none");
+        }
+
+        function hide(id) {
+            document.getElementById(id).classList.add("d-none");
+        }
+    </script>
+</body>
+
+</html>

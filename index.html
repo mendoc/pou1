@@ -108,15 +108,51 @@
                 let points = JSON.parse(localStorage.points);
                 document.getElementById("total-points").innerHTML = points.length;
                 points.forEach(p => {
-                    pointsHTML += `<div class="d-flex align-items-center border-bottom">
+                    pointsHTML += `<div class="d-flex align-items-center border-bottom" id="point-${p.access}">
                                     <span class="material-icons p-3 invisible">edit</span>
-                                    <span class="fs-5 flex-grow-1 py-3">${new Date(p.access).toLocaleString()}</span>
+                                    <span class="fs-5 flex-grow-1 py-3 label" onclick="switchToEditMode(${p.access})">${p.label ? p.label : new Date(p.access).toLocaleString()}</span>
                                     <a class="text-decoration-none p-3" target="_blank" href="https://www.google.com/maps/@${p.lat},${p.lng},15z"><span class="material-icons">open_in_new</span></a>
                                 </div>`
                 });
                 document.getElementById("points").innerHTML = pointsHTML;
             } else {
                 document.getElementById("total-points").innerHTML = 0;
+            }
+        }
+
+        function switchToEditMode(accessTime) {
+            let pointEl = document.querySelector(`#point-${accessTime} .label`);
+            if (pointEl.innerHTML.includes("input")) {
+                pointEl.querySelector(`input`).select();
+                return
+            };
+            pointEl.innerHTML = `<input class="user-select-all" type="text" onblur="switchToReadMode(${accessTime})" value="${pointEl.textContent}" />`;
+            pointEl.querySelector(`input`).select();
+            pointEl.classList.add("edit");
+        }
+
+        function switchToReadMode(accessTime) {
+            let pointsEls = document.querySelectorAll(`.edit`);
+            pointsEls.forEach(p => {
+                p.classList.remove("edit");
+                let label = p.querySelector(`input`).value
+                p.textContent = label;
+                editPoint(accessTime, label);
+            })
+        }
+
+        function editPoint(accessTime, label) {
+            if (localStorage.points) {
+                let points = JSON.parse(localStorage.points);
+                points.map((p, i) => {
+                    console.log(p.access === accessTime, p.label !== label)
+                    if (p.access === accessTime && p.label !== label) {
+                        p.label = label;
+                        points[i] = p;
+                        localStorage.points = JSON.stringify(points);
+                        return;
+                    }
+                })
             }
         }
 
